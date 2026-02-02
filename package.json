@@ -1,6 +1,6 @@
 {
   "name": "gomamayo",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "MeCab不要のゴママヨ検出ライブラリ",
   "type": "module",
   "main": "dist/index.cjs",
@@ -16,7 +16,7 @@
   "scripts": {
     "setup": "npm install && node scripts/setup.js",
     "test": "jest",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist lib",
     "format": "prettier --write ./src/",
     "format:check": "prettier --check ./src/",
     "build:types": "tsc",

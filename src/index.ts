@@ -1,23 +1,37 @@
 import kuromoji, { Tokenizer, IpadicFeatures } from "kuromoji";
 import path from "path";
+import fs from "fs";
 
 // 辞書パスを取得
 declare const __dirname: string;
 
 const getPackageDictPath = (packageName: string): string => {
   try {
-    // CJS
     if (typeof __dirname !== "undefined") {
       const { createRequire } = require("module");
       const localRequire = createRequire(path.join(__dirname, "index.js"));
       const packagePath = localRequire.resolve(`${packageName}/package.json`);
-      return path.resolve(path.dirname(packagePath), "dict");
+      const dictPath = path.resolve(path.dirname(packagePath), "dict");
+      if (fs.existsSync(dictPath)) {
+        return dictPath;
+      }
     }
   } catch {}
   try {
     const packagePath = require.resolve(`${packageName}/package.json`);
-    return path.resolve(path.dirname(packagePath), "dict");
+    const dictPath = path.resolve(path.dirname(packagePath), "dict");
+    if (fs.existsSync(dictPath)) {
+      return dictPath;
+    }
   } catch {}
+
+  if (typeof __dirname !== "undefined") {
+    const libDictPath = path.resolve(__dirname, "..", "lib", packageName);
+    if (fs.existsSync(libDictPath)) {
+      return libDictPath;
+    }
+  }
+
   return path.resolve("node_modules", packageName, "dict");
 };
 

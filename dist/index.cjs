@@ -37,20 +37,33 @@ __export(cjs_entry_exports, {
 module.exports = __toCommonJS(cjs_entry_exports);
 var import_kuromoji = __toESM(require("kuromoji"));
 var import_path = __toESM(require("path"));
+var import_fs = __toESM(require("fs"));
 var getPackageDictPath = (packageName) => {
   try {
     if (typeof __dirname !== "undefined") {
       const { createRequire } = require("module");
       const localRequire = createRequire(import_path.default.join(__dirname, "index.js"));
       const packagePath = localRequire.resolve(`${packageName}/package.json`);
-      return import_path.default.resolve(import_path.default.dirname(packagePath), "dict");
+      const dictPath = import_path.default.resolve(import_path.default.dirname(packagePath), "dict");
+      if (import_fs.default.existsSync(dictPath)) {
+        return dictPath;
+      }
     }
   } catch {
   }
   try {
     const packagePath = require.resolve(`${packageName}/package.json`);
-    return import_path.default.resolve(import_path.default.dirname(packagePath), "dict");
+    const dictPath = import_path.default.resolve(import_path.default.dirname(packagePath), "dict");
+    if (import_fs.default.existsSync(dictPath)) {
+      return dictPath;
+    }
   } catch {
+  }
+  if (typeof __dirname !== "undefined") {
+    const libDictPath = import_path.default.resolve(__dirname, "..", "lib", packageName);
+    if (import_fs.default.existsSync(libDictPath)) {
+      return libDictPath;
+    }
   }
   return import_path.default.resolve("node_modules", packageName, "dict");
 };

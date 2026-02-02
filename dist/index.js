@@ -8,20 +8,33 @@ var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require
 // src/index.ts
 import kuromoji from "kuromoji";
 import path from "path";
+import fs from "fs";
 var getPackageDictPath = (packageName) => {
   try {
     if (typeof __dirname !== "undefined") {
       const { createRequire } = __require("module");
       const localRequire = createRequire(path.join(__dirname, "index.js"));
       const packagePath = localRequire.resolve(`${packageName}/package.json`);
-      return path.resolve(path.dirname(packagePath), "dict");
+      const dictPath = path.resolve(path.dirname(packagePath), "dict");
+      if (fs.existsSync(dictPath)) {
+        return dictPath;
+      }
     }
   } catch {
   }
   try {
     const packagePath = __require.resolve(`${packageName}/package.json`);
-    return path.resolve(path.dirname(packagePath), "dict");
+    const dictPath = path.resolve(path.dirname(packagePath), "dict");
+    if (fs.existsSync(dictPath)) {
+      return dictPath;
+    }
   } catch {
+  }
+  if (typeof __dirname !== "undefined") {
+    const libDictPath = path.resolve(__dirname, "..", "lib", packageName);
+    if (fs.existsSync(libDictPath)) {
+      return libDictPath;
+    }
   }
   return path.resolve("node_modules", packageName, "dict");
 };
