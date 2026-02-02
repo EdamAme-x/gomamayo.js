@@ -21,8 +21,11 @@ jobs:
 
       - name: Install, Build, and Test
         run: |
-          npm install -g node-fetch adm-zip
-          npm ci
+          npm ci --ignore-scripts
+          cd node_modules/kuromoji-neologd
+          npm install node-fetch adm-zip
+          node postscript.js
+          cd ../..
           npm run build
           npm test
 
