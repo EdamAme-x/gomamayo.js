@@ -58,3 +58,17 @@ esbuild
   })
   .catch((err) => consola.error("Faled to build CJS:", err))
   .then(() => consola.success("CJS build successful!"));
+
+// --- Build CLI ---
+esbuild
+  .build({
+    ...commonOptions,
+    entryPoints: ["src/cli.ts"],
+    outfile: "dist/cli.js",
+    format: "esm",
+    banner: {
+      js: "#!/usr/bin/env node",
+    },
+  })
+  .catch((err) => consola.error("Failed to build CLI:", err))
+  .then(() => consola.success("CLI build successful!"));

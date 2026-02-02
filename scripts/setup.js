@@ -122,9 +122,16 @@ async function run() {
     pkg.description = description;
     if (author) pkg.author = author;
     if (repoInput) {
+      let finalRepoInput = repoInput;
+      if (!finalRepoInput.startsWith("git+")) {
+        finalRepoInput = `git+${finalRepoInput}`
+      }
+      if (!finalRepoInput.endsWith(".git")) {
+        finalRepoInput = `${finalRepoInput}.git`;
+      }
       pkg.repository = {
         type: "git",
-        url: repoInput.endsWith(".git") ? repoInput : `${repoInput}.git`,
+        url: finalRepoInput,
       };
       const normalized = repoInput.replace(/(^git\+|\.git$)/g, "");
       pkg.bugs = { url: `${normalized}/issues` };
