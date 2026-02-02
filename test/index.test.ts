@@ -1,14 +1,100 @@
-import main from "../src/index";
+import { analyze, isGomamayo, find } from "../src/index";
 
-describe("main", () => {
-  test("logs template message", () => {
-    const spy = jest.spyOn(console, "log").mockImplementation(() => {});
-    main();
-    expect(spy).toHaveBeenCalledWith("This is a template!");
-    spy.mockRestore();
+describe("analyze", () => {
+  test("ごまマヨネーズ is 1項1次", async () => {
+    const result = await analyze("ごまマヨネーズ");
+    expect(result.isGomamayo).toBe(true);
+    expect(result.ary).toBe(1);
+    expect(result.degree).toBe(1);
   });
 
-  test("is a function", () => {
-    expect(typeof main).toBe("function");
+  test("すいかカット is 1項1次", async () => {
+    const result = await analyze("すいかカット");
+    expect(result.isGomamayo).toBe(true);
+    expect(result.ary).toBe(1);
+    expect(result.degree).toBe(1);
+  });
+
+  test("無性生殖 is 2次ゴママヨ", async () => {
+    const result = await analyze("無性生殖");
+    expect(result.isGomamayo).toBe(true);
+    expect(result.degree).toBe(2);
+  });
+
+  test("部分分数 is 2次ゴママヨ", async () => {
+    const result = await analyze("部分分数");
+    expect(result.isGomamayo).toBe(true);
+    expect(result.degree).toBe(2);
+  });
+
+  test("オレンジレンジ is 3次ゴママヨ", async () => {
+    const result = await analyze("オレンジレンジ");
+    expect(result.isGomamayo).toBe(true);
+    expect(result.degree).toBe(3);
+  });
+
+  test("太鼓公募募集終了 is 3項ゴママヨ", async () => {
+    const result = await analyze("太鼓公募募集終了");
+    expect(result.isGomamayo).toBe(true);
+    expect(result.ary).toBe(3);
+  });
+
+  test("博麗霊夢 is 2次ゴママヨ (proper noun)", async () => {
+    const result = await analyze("博麗霊夢");
+    expect(result.isGomamayo).toBe(true);
+    expect(result.degree).toBe(2);
+  });
+
+  test("higher option controls high-order detection", async () => {
+    const withHigher = await analyze("部分分数", { higher: true });
+    const withoutHigher = await analyze("部分分数", { higher: false });
+    expect(withHigher.degree).toBe(2);
+    expect(withHigher.isGomamayo).toBe(true);
+    expect(withoutHigher.isGomamayo).toBe(false);
+  });
+
+  test("パパイヤ is not ゴママヨ (not compound)", async () => {
+    const result = await analyze("パパイヤ");
+    expect(result.isGomamayo).toBe(false);
+  });
+
+  test("パパイヤジュース is not ゴママヨ (no consecutive sound at boundary)", async () => {
+    const result = await analyze("パパイヤジュース");
+    expect(result.isGomamayo).toBe(false);
+  });
+
+  test("オレンジジュース is not ゴママヨ (visual only)", async () => {
+    const result = await analyze("オレンジジュース");
+    expect(result.isGomamayo).toBe(false);
+  });
+
+  test("multi option limits to single match", async () => {
+    const withMulti = await analyze("モバイルルータ端末", { multi: true });
+    const withoutMulti = await analyze("モバイルルータ端末", { multi: false });
+    expect(withMulti.ary).toBeGreaterThanOrEqual(1);
+    expect(withoutMulti.ary).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("isGomamayo", () => {
+  test("returns true for ゴママヨ", async () => {
+    expect(await isGomamayo("ごまマヨネーズ")).toBe(true);
+  });
+
+  test("returns false for non-ゴママヨ", async () => {
+    expect(await isGomamayo("パパイヤ")).toBe(false);
+  });
+});
+
+describe("find", () => {
+  test("returns matches for ゴママヨ", async () => {
+    const matches = await find("ごまマヨネーズ");
+    expect(matches).not.toBeNull();
+    expect(matches!.length).toBeGreaterThan(0);
+  });
+
+  test("returns null for non-ゴママヨ", async () => {
+    const matches = await find("パパイヤ");
+    expect(matches).toBeNull();
   });
 });
