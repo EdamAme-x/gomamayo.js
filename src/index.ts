@@ -3,23 +3,18 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 
-// ビルド時にdefineで設定されるフラグ
 declare const __BUILD_FORMAT__: "esm" | "cjs";
 declare const __dirname: string;
 
-// パッケージのルートディレクトリを取得（グローバルインストール対応）
 const getPackageRoot = (): string => {
   try {
-    // ESMビルドの場合: import.meta.urlからパスを取得
     if (typeof __BUILD_FORMAT__ !== "undefined" && __BUILD_FORMAT__ === "esm") {
       const currentFile = fileURLToPath(import.meta.url);
       const currentDir = path.dirname(currentFile);
-      // dist/index.js から実行されるので、親ディレクトリがパッケージルート
       return path.resolve(currentDir, "..");
     }
   } catch {}
 
-  // CJSビルドまたはテスト環境: __dirnameを使用
   if (typeof __dirname !== "undefined") {
     return path.resolve(__dirname, "..");
   }
@@ -30,13 +25,11 @@ const getPackageRoot = (): string => {
 const packageRoot = getPackageRoot();
 
 const getPackageDictPath = (packageName: string): string => {
-  // 1. まずlib/フォルダを確認（グローバルインストール対応）
   const libDictPath = path.resolve(packageRoot, "lib", packageName);
   if (fs.existsSync(libDictPath)) {
     return libDictPath;
   }
 
-  // 2. パッケージのnode_modulesから参照
   const nodeModulesDictPath = path.resolve(
     packageRoot,
     "node_modules",
@@ -47,7 +40,6 @@ const getPackageDictPath = (packageName: string): string => {
     return nodeModulesDictPath;
   }
 
-  // 3. require.resolveでパッケージを参照
   try {
     const packagePath = require.resolve(`${packageName}/package.json`);
     const dictPath = path.resolve(path.dirname(packagePath), "dict");
@@ -56,7 +48,6 @@ const getPackageDictPath = (packageName: string): string => {
     }
   } catch {}
 
-  // 4. 最終フォールバック
   return path.resolve("node_modules", packageName, "dict");
 };
 
