@@ -36,6 +36,15 @@ __export(cjs_entry_exports, {
 });
 module.exports = __toCommonJS(cjs_entry_exports);
 var import_kuromoji = __toESM(require("kuromoji"));
+var import_path = __toESM(require("path"));
+var getPackageDictPath = (packageName) => {
+  try {
+    const packagePath = require.resolve(`${packageName}/package.json`);
+    return import_path.default.resolve(import_path.default.dirname(packagePath), "dict");
+  } catch {
+    return import_path.default.resolve("node_modules", packageName, "dict");
+  }
+};
 var VOWEL_MAP = {
   \u30A2: "\u30A2",
   \u30A4: "\u30A4",
@@ -167,7 +176,8 @@ var neologdTokenizer = null;
 function getIpadicTokenizer() {
   if (!ipadicTokenizer) {
     ipadicTokenizer = new Promise((resolve, reject) => {
-      import_kuromoji.default.builder({ dicPath: "node_modules/kuromoji/dict" }).build((err, tokenizer) => {
+      const dicPath = getPackageDictPath("kuromoji");
+      import_kuromoji.default.builder({ dicPath }).build((err, tokenizer) => {
         if (err) reject(err);
         else resolve(tokenizer);
       });
@@ -178,7 +188,8 @@ function getIpadicTokenizer() {
 function getNeologdTokenizer() {
   if (!neologdTokenizer) {
     neologdTokenizer = new Promise((resolve, reject) => {
-      import_kuromoji.default.builder({ dicPath: "node_modules/kuromoji-neologd/dict" }).build((err, tokenizer) => {
+      const dicPath = getPackageDictPath("kuromoji-neologd");
+      import_kuromoji.default.builder({ dicPath }).build((err, tokenizer) => {
         if (err) reject(err);
         else resolve(tokenizer);
       });

@@ -1,5 +1,21 @@
+var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+}) : x)(function(x) {
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x + '" is not supported');
+});
+
 // src/index.ts
 import kuromoji from "kuromoji";
+import path from "path";
+var getPackageDictPath = (packageName) => {
+  try {
+    const packagePath = __require.resolve(`${packageName}/package.json`);
+    return path.resolve(path.dirname(packagePath), "dict");
+  } catch {
+    return path.resolve("node_modules", packageName, "dict");
+  }
+};
 var VOWEL_MAP = {
   \u30A2: "\u30A2",
   \u30A4: "\u30A4",
@@ -131,7 +147,8 @@ var neologdTokenizer = null;
 function getIpadicTokenizer() {
   if (!ipadicTokenizer) {
     ipadicTokenizer = new Promise((resolve, reject) => {
-      kuromoji.builder({ dicPath: "node_modules/kuromoji/dict" }).build((err, tokenizer) => {
+      const dicPath = getPackageDictPath("kuromoji");
+      kuromoji.builder({ dicPath }).build((err, tokenizer) => {
         if (err) reject(err);
         else resolve(tokenizer);
       });
@@ -142,7 +159,8 @@ function getIpadicTokenizer() {
 function getNeologdTokenizer() {
   if (!neologdTokenizer) {
     neologdTokenizer = new Promise((resolve, reject) => {
-      kuromoji.builder({ dicPath: "node_modules/kuromoji-neologd/dict" }).build((err, tokenizer) => {
+      const dicPath = getPackageDictPath("kuromoji-neologd");
+      kuromoji.builder({ dicPath }).build((err, tokenizer) => {
         if (err) reject(err);
         else resolve(tokenizer);
       });
