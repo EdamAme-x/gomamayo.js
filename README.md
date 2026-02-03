@@ -6,7 +6,11 @@ MeCab不要のゴママヨ検出ライブラリ
 固有名詞のゴママヨも一応検出可能です。
 
 > [!NOTE]
-> 使用している辞書のサイズが非常に大きく、導入のためのスクリプトが特殊なため、開発者の環境ではインストールに2分以上要しました。
+> 使用している辞書のサイズが非常に大きく、導入のためのスクリプトが特殊なため、開発者の環境ではインストールに3分ほど要しました。
+
+<video controls playsinline src="./assets/video/install-gomamayo-rta.mp4" style="max-width:100%;height:auto;">
+  お使いのブラウザは動画タグに対応していません。<a href="./assets/video/install-gomamayo-rta.mp4">動画をダウンロード</a>
+</video>
 
 ## Install
 
