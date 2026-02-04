@@ -10,8 +10,14 @@ const zip = new AdmZip();
 const outputPath = path.resolve(rootDir, "dict.zip");
 
 const dictSources = [
-  { name: "kuromoji", src: path.join(rootDir, "node_modules", "kuromoji", "dict") },
-  { name: "kuromoji-neologd", src: path.join(rootDir, "node_modules", "kuromoji-neologd", "dict") },
+  {
+    name: "kuromoji",
+    src: path.join(rootDir, "node_modules", "kuromoji", "dict"),
+  },
+  {
+    name: "kuromoji-neologd",
+    src: path.join(rootDir, "node_modules", "kuromoji-neologd", "dict"),
+  },
 ];
 
 for (const { name, src } of dictSources) {
@@ -25,4 +31,6 @@ for (const { name, src } of dictSources) {
 
 zip.writeZip(outputPath);
 console.log(`[create-dict-zip] Created ${outputPath}`);
-console.log(`[create-dict-zip] Upload this file to GitHub Releases with tag "dict"`);
+console.log(
+  `[create-dict-zip] Upload this file to GitHub Releases with tag "dict"`,
+);

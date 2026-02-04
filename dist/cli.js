@@ -247,7 +247,7 @@ function findInternalGomamayo(moras, higher) {
 }
 function buildTokenInfos(ipadicTokens, neologdTokens) {
   const result = [];
-  if (neologdTokens.length === 1 && ipadicTokens.length > 1) {
+  if (neologdTokens && neologdTokens.length === 1 && ipadicTokens.length > 1) {
     const neo = neologdTokens[0];
     if (neo && neo.reading) {
       const neoReading = hiraToKata(neo.reading);
@@ -275,14 +275,12 @@ function buildTokenInfos(ipadicTokens, neologdTokens) {
   return result;
 }
 async function analyze(input, options = {}) {
-  const { higher = true, multi = true } = options;
-  const [ipadic, neologd] = await Promise.all([
-    getIpadicTokenizer(),
-    getNeologdTokenizer()
-  ]);
+  const { higher = true, multi = true, useNeologd = true } = options;
+  const ipadic = await getIpadicTokenizer();
+  const neologd = useNeologd ? await getNeologdTokenizer() : null;
   const normalized = normalize(input);
   const ipadicTokens = ipadic.tokenize(normalized);
-  const neologdTokens = neologd.tokenize(normalized);
+  const neologdTokens = neologd ? neologd.tokenize(normalized) : null;
   const result = {
     isGomamayo: false,
     matches: [],
@@ -315,7 +313,7 @@ async function analyze(input, options = {}) {
       if (!multi) break;
     }
   }
-  if (result.ary === 0 && neologdTokens.length === 1 && ipadicTokens.length > 1) {
+  if (result.ary === 0 && neologdTokens && neologdTokens.length === 1 && ipadicTokens.length > 1) {
     const token = neologdTokens[0];
     if (token && token.reading) {
       const reading = prolongedToVowel(hiraToKata(token.reading));
@@ -359,15 +357,23 @@ var argv = yargs(hideBin(process.argv)).scriptName("gomamayo").usage("$0 <text>"
   describe: "\u591A\u9805\u30B4\u30DE\u30DE\u30E8\u3092\u691C\u51FA\u3059\u308B\u304B",
   type: "boolean",
   default: true
-}).example("$0 \u3054\u307E\u30DE\u30E8\u30CD\u30FC\u30BA", "\u57FA\u672C\u7684\u306A\u4F7F\u7528\u65B9\u6CD5").example("$0 \u30AA\u30EC\u30F3\u30B8\u30EC\u30F3\u30B8 --higher true", "\u9AD8\u6B21\u30B4\u30DE\u30DE\u30E8\u691C\u51FA\u3042\u308A").example("$0 \u592A\u9F13\u516C\u52DF\u52DF\u96C6\u7D42\u4E86 --multi true", "\u591A\u9805\u30B4\u30DE\u30DE\u30E8\u691C\u51FA\u3042\u308A").example("$0 \u3054\u307E\u30DE\u30E8\u30CD\u30FC\u30BA --higher false", "\u9AD8\u6B21\u30B4\u30DE\u30DE\u30E8\u691C\u51FA\u306A\u3057").help().alias("help", "?").version().alias("version", "v").parseSync();
+}).option("neologd", {
+  alias: "n",
+  describe: "neologd\u8F9E\u66F8\u3092\u4F7F\u7528\u3059\u308B\u304B (\u30E1\u30E2\u30EA\u7BC0\u7D04\u306E\u305F\u3081false\u306B\u3067\u304D\u308B)",
+  type: "boolean",
+  default: true
+}).example("$0 \u3054\u307E\u30DE\u30E8\u30CD\u30FC\u30BA", "\u57FA\u672C\u7684\u306A\u4F7F\u7528\u65B9\u6CD5").example("$0 \u30AA\u30EC\u30F3\u30B8\u30EC\u30F3\u30B8 --higher true", "\u9AD8\u6B21\u30B4\u30DE\u30DE\u30E8\u691C\u51FA\u3042\u308A").example("$0 \u592A\u9F13\u516C\u52DF\u52DF\u96C6\u7D42\u4E86 --multi true", "\u591A\u9805\u30B4\u30DE\u30DE\u30E8\u691C\u51FA\u3042\u308A").example("$0 \u3054\u307E\u30DE\u30E8\u30CD\u30FC\u30BA --higher false", "\u9AD8\u6B21\u30B4\u30DE\u30DE\u30E8\u691C\u51FA\u306A\u3057").example("$0 \u3054\u307E\u30DE\u30E8\u30CD\u30FC\u30BA --neologd false", "neologd\u8F9E\u66F8\u306A\u3057(\u7701\u30E1\u30E2\u30EA)").help().alias("help", "?").version().alias("version", "v").parseSync();
 (async function() {
   const inputText = argv.text;
   const options = {
     higher: argv.higher,
-    multi: argv.multi
+    multi: argv.multi,
+    useNeologd: argv.neologd
   };
   console.log(`\u5165\u529B\u6587\u5B57\u5217: ${inputText}`);
-  console.log(`\u30AA\u30D7\u30B7\u30E7\u30F3: higher=${options.higher}, multi=${options.multi}`);
+  console.log(
+    `\u30AA\u30D7\u30B7\u30E7\u30F3: higher=${options.higher}, multi=${options.multi}, useNeologd=${options.useNeologd}`
+  );
   console.log("");
   try {
     const result = await analyze(inputText, options);

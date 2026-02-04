@@ -124,7 +124,7 @@ async function run() {
     if (repoInput) {
       let finalRepoInput = repoInput;
       if (!finalRepoInput.startsWith("git+")) {
-        finalRepoInput = `git+${finalRepoInput}`
+        finalRepoInput = `git+${finalRepoInput}`;
       }
       if (!finalRepoInput.endsWith(".git")) {
         finalRepoInput = `${finalRepoInput}.git`;

@@ -25,6 +25,11 @@ async function downloadFile(fileUrl, dest) {
 
 function unzipFile(zipFilePath, outputDir) {
   const zip = new AdmZip(zipFilePath);
+  const zipEntries = zip.getEntries();
+  console.log(`[postinstall] ZIP contains ${zipEntries.length} entries:`);
+  zipEntries.forEach((entry) => {
+    console.log(`  - ${entry.entryName}`);
+  });
   zip.extractAllTo(outputDir, true);
 }
 
@@ -33,7 +38,14 @@ function unzipFile(zipFilePath, outputDir) {
     // 既にlibが存在する場合はスキップ
     const kuromojiPath = path.join(outputPath, "kuromoji");
     const neologdPath = path.join(outputPath, "kuromoji-neologd");
-    if (fs.existsSync(kuromojiPath) && fs.existsSync(neologdPath)) {
+
+    // 両方のディレクトリが存在し、かつファイルが含まれているかチェック
+    const kuromojiExists =
+      fs.existsSync(kuromojiPath) && fs.readdirSync(kuromojiPath).length > 0;
+    const neologdExists =
+      fs.existsSync(neologdPath) && fs.readdirSync(neologdPath).length > 0;
+
+    if (kuromojiExists && neologdExists) {
       console.log("[postinstall] Dictionaries already exist, skipping...");
       return;
     }
@@ -46,6 +58,22 @@ function unzipFile(zipFilePath, outputDir) {
     fs.mkdirSync(outputPath, { recursive: true });
     unzipFile(zipPath, outputPath);
     console.log(`[postinstall] Extracted to ${outputPath}`);
+
+    // 展開後の確認
+    if (fs.existsSync(kuromojiPath)) {
+      console.log(
+        `[postinstall] ✓ kuromoji extracted (${fs.readdirSync(kuromojiPath).length} files)`,
+      );
+    } else {
+      console.log(`[postinstall] ✗ kuromoji not found`);
+    }
+    if (fs.existsSync(neologdPath)) {
+      console.log(
+        `[postinstall] ✓ kuromoji-neologd extracted (${fs.readdirSync(neologdPath).length} files)`,
+      );
+    } else {
+      console.log(`[postinstall] ✗ kuromoji-neologd not found`);
+    }
 
     fs.unlinkSync(zipPath);
     console.log(`[postinstall] Temporary ZIP file deleted.`);
@@ -91,4 +119,3 @@ function unzipFile(zipFilePath, outputDir) {
     }
   }
 })();
-
