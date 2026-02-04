@@ -29,6 +29,13 @@ async function downloadAndExtract(fileUrl, outputDir) {
 
   const extractor = unzip.Extract({ path: outputDir });
   await pipeline(source, extractor);
+  await new Promise((resolve, reject) => {
+    const extractor = unzip.Extract({ path: outputDir });
+    extractor.on("close", resolve);
+    extractor.on("error", reject);
+    source.on("error", reject);
+    source.pipe(extractor);
+  });
 }
 
 (async () => {
