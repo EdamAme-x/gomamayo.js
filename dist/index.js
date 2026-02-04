@@ -201,6 +201,17 @@ function getNeologdTokenizer() {
   }
   return neologdTokenizer;
 }
+function clearTokenizerCache(type = "all") {
+  if (type === "ipadic" || type === "all") {
+    ipadicTokenizer = null;
+  }
+  if (type === "neologd" || type === "all") {
+    neologdTokenizer = null;
+  }
+  if (global.gc) {
+    global.gc();
+  }
+}
 function findMaxDegree(formerMora, laterMora) {
   const maxCheck = Math.min(formerMora.length, laterMora.length);
   let maxDegree = 0;
@@ -242,7 +253,7 @@ function findInternalGomamayo(moras, higher) {
 }
 function buildTokenInfos(ipadicTokens, neologdTokens) {
   const result = [];
-  if (neologdTokens.length === 1 && ipadicTokens.length > 1) {
+  if (neologdTokens && neologdTokens.length === 1 && ipadicTokens.length > 1) {
     const neo = neologdTokens[0];
     if (neo && neo.reading) {
       const neoReading = hiraToKata(neo.reading);
@@ -270,14 +281,12 @@ function buildTokenInfos(ipadicTokens, neologdTokens) {
   return result;
 }
 async function analyze(input, options = {}) {
-  const { higher = true, multi = true } = options;
-  const [ipadic, neologd] = await Promise.all([
-    getIpadicTokenizer(),
-    getNeologdTokenizer()
-  ]);
+  const { higher = true, multi = true, useNeologd = true } = options;
+  const ipadic = await getIpadicTokenizer();
+  const neologd = useNeologd ? await getNeologdTokenizer() : null;
   const normalized = normalize(input);
   const ipadicTokens = ipadic.tokenize(normalized);
-  const neologdTokens = neologd.tokenize(normalized);
+  const neologdTokens = neologd ? neologd.tokenize(normalized) : null;
   const result = {
     isGomamayo: false,
     matches: [],
@@ -310,7 +319,7 @@ async function analyze(input, options = {}) {
       if (!multi) break;
     }
   }
-  if (result.ary === 0 && neologdTokens.length === 1 && ipadicTokens.length > 1) {
+  if (result.ary === 0 && neologdTokens && neologdTokens.length === 1 && ipadicTokens.length > 1) {
     const token = neologdTokens[0];
     if (token && token.reading) {
       const reading = prolongedToVowel(hiraToKata(token.reading));
@@ -343,9 +352,10 @@ async function find(input, options = {}) {
   const result = await analyze(input, options);
   return result.isGomamayo ? result.matches : null;
 }
-var index_default = { analyze, isGomamayo, find };
+var index_default = { analyze, isGomamayo, find, clearTokenizerCache };
 export {
   analyze,
+  clearTokenizerCache,
   index_default as default,
   find,
   isGomamayo
