@@ -18,17 +18,20 @@ const cjsSourcePlugin = {
 
     build.onLoad({ filter: /.*/, namespace: "cjs-source-ns" }, async () => {
       let contents = await fs.readFile("src/index.ts", "utf8");
-      
+
       // fileURLToPath importを削除
-      contents = contents.replace(/import \{ fileURLToPath \} from "url";\n/, "");
-      
+      contents = contents.replace(
+        /import \{ fileURLToPath \} from "url";\n/,
+        "",
+      );
+
       // ESMビルド用のimport.meta.url使用部分を削除
       // try-catchブロック全体を削除して、CJSでは直接__dirnameフォールバックに行く
       contents = contents.replace(
         /try \{\s*\/\/ ESMビルドの場合: import\.meta\.urlからパスを取得[\s\S]*?\} catch \{\}/,
-        ""
+        "",
       );
-      
+
       return {
         contents,
         loader: "ts",
